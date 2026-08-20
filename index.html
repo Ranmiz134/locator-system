@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת ניהול ואיתור ארכליות</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
-    <!-- Header -->
     <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -32,7 +29,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Search -->
         <div class="bg-slate-800/80 backdrop-blur border border-slate-700/60 rounded-2xl p-4 mb-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="relative w-full md:w-96">
                 <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
@@ -53,7 +49,7 @@
                 <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-500"></i>
                 <div>
                     <h4 class="font-bold">התרעת ניתוק או בעיית תקשורת</h4>
-                    <p class="text-sm">ארכלית בחיפוש לא שידרה אות חיים לאחרונה. ייתכן שהיא כבויה או ללא קליטה.</p>
+                    <p class="text-sm">ארכלית בחיפוש לא הגיבה מעל 40 שניות. ייתכן שהיא כבויה, אין קליטה, או שהיא עדיין מתעוררת.</p>
                 </div>
             </div>
             <button onclick="dismissAlert()"><i data-lucide="x" class="w-5 h-5 text-rose-400"></i></button>
@@ -62,7 +58,6 @@
         <div id="boxesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
-    <!-- Add Box Modal -->
     <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
             <div class="flex justify-between items-center mb-6">
@@ -108,7 +103,8 @@
 
         function checkTimeouts(boxes) {
             const now = new Date().getTime();
-            const hasTimeout = boxes.some(b => b.status === 'searching' && b.last_updated && (now - new Date(b.last_updated).getTime()) > 35000);
+            // התראה קופצת רק אם עברו 40 שניות מאז העדכון האחרון בזמן חיפוש
+            const hasTimeout = boxes.some(b => b.status === 'searching' && b.last_updated && (now - new Date(b.last_updated).getTime()) > 40000);
             document.getElementById('timeoutAlert').classList.toggle('hidden', !hasTimeout);
         }
 
@@ -179,12 +175,15 @@
             lucide.createIcons();
         }
 
-        // התיקון הקריטי: מעדכנים רק סטטוס! ה-last_updated יתעדכן רק כשהרכיב הפיזי יפנה לשרת.
         async function updateBox(boxId, newStatus) {
+            // התיקון: מעדכנים גם סטטוס וגם זמן באותה לחיצה כדי לאפס את הטיימר המקומי
             await fetch(`${SUPABASE_URL}/rest/v1/boxes?box_id=eq.${boxId}`, {
                 method: 'PATCH',
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                body: JSON.stringify({ status: newStatus }) 
+                body: JSON.stringify({ 
+                    status: newStatus,
+                    last_updated: new Date().toISOString()
+                }) 
             });
             loadBoxes();
         }
