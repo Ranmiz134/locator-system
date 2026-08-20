@@ -3,70 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול ארכליות מרכזית</title>
+    <title>מערכת ניהול ואיתור ארכליות</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap');
-        body { font-family: 'Heebo', sans-serif; background-color: #f8fafc; }
-    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-blue-50 text-blue-600 p-4 rounded-xl text-3xl">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">ניהול ארכליות חכם</h1>
-                    <p class="text-gray-500 text-sm">מעקב סוללה וניטור "אות חיים" כל 10 דקות</p>
-                </div>
-            </div>
-        </header>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex items-center gap-3">
-            <div class="bg-gray-50 text-gray-400 px-4 py-3 rounded-xl">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </div>
-            <input type="text" id="searchInput" oninput="filterBoxes()" placeholder="חפש ארכלית..." class="w-full bg-transparent font-medium text-gray-800 focus:outline-none text-lg">
-        </div>
-
-        <div id="timeoutAlert" class="hidden bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl mb-6 flex items-center justify-between animate-pulse">
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md">
+                    <i data-lucide="radio" class="w-7 h-7 animate-pulse"></i>
+                </div>
                 <div>
-                    <h4 class="font-bold">התרעת ניתוק / שגיאת תקשורת!</h4>
-                    <p class="text-sm">ארכלית נמצאה בחיפוש אך לא הגיבה במשך זמן רב.</p>
+                    <h1 class="text-2xl font-black tracking-wide text-white">ניהול ארכליות חכם</h1>
+                    <p class="text-xs text-slate-400">איתור, ניטור סוללה ואות חיים מהימן</p>
                 </div>
             </div>
-            <button onclick="dismissAlert()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                הוסף ארכלית חדשה
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Search -->
+        <div class="bg-slate-800/80 backdrop-blur border border-slate-700/60 rounded-2xl p-4 mb-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="relative w-full md:w-96">
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="filterBoxes()" placeholder="חפש לפי מספר ארכלית..." 
+                    class="w-full bg-slate-900/90 border border-slate-700 rounded-xl py-3 pr-11 pl-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all">
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="loadBoxes()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 p-2.5 rounded-xl transition-all shadow">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-gray-800">רשימת מכשירים</h2>
-                <button onclick="loadBoxes()" class="text-blue-600 text-sm"><i class="fa-solid fa-rotate-right"></i> רענן נתונים</button>
+        <div id="timeoutAlert" class="hidden bg-rose-950/40 border border-rose-500/50 text-rose-300 px-5 py-4 rounded-2xl mb-6 flex items-center justify-between animate-pulse">
+            <div class="flex items-center gap-3">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-500"></i>
+                <div>
+                    <h4 class="font-bold">התרעת ניתוק או בעיית תקשורת</h4>
+                    <p class="text-sm">ארכלית בחיפוש לא שידרה אות חיים לאחרונה. ייתכן שהיא כבויה או ללא קליטה.</p>
+                </div>
             </div>
-            <div id="boxesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <button onclick="dismissAlert()"><i data-lucide="x" class="w-5 h-5 text-rose-400"></i></button>
+        </div>
+
+        <div id="boxesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- Add Box Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="text-indigo-400"></i>
+                    הוספת ארכלית חדשה
+                </h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">מספר או מזהה הארכלית</label>
+                    <input type="text" id="newBoxId" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closeAddModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium px-4 py-2.5 rounded-xl text-sm transition">ביטול</button>
+                <button onclick="addNewBox()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-lg transition">שמור והוסף</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://atzcanwowaxcyosglrak.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0emNhbndvd2F4Y3lvc2dscmFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2Nzc0NTYsImV4cCI6MjEwMjI1MzQ1Nn0.PaTjNkBI7SPFJejMOirlLF-Th7urptujTUUqZa6nISs';
+        const SUPABASE_URL = "https://atzcanwowaxcyosglrak.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0emNhbndvd2F4Y3lvc2dscmFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2Nzc0NTYsImV4cCI6MjEwMjI1MzQ1Nn0.PaTjNkBI7SPFJejMOirlLF-Th7urptujTUUqZa6nISs";
         let allBoxes = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             loadBoxes();
-            setInterval(loadBoxes, 4000); // רענון כל 4 שניות
+            setInterval(loadBoxes, 4000); 
         });
 
         async function loadBoxes() {
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/boxes?select=*`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 allBoxes = await res.json();
                 checkTimeouts(allBoxes);
@@ -76,73 +108,106 @@
 
         function checkTimeouts(boxes) {
             const now = new Date().getTime();
-            const hasTimeout = boxes.some(b => b.status === 'searching' && b.last_updated && (now - new Date(b.last_updated).getTime()) > 30000);
+            const hasTimeout = boxes.some(b => b.status === 'searching' && b.last_updated && (now - new Date(b.last_updated).getTime()) > 35000);
             document.getElementById('timeoutAlert').classList.toggle('hidden', !hasTimeout);
         }
 
         function dismissAlert() { document.getElementById('timeoutAlert').classList.add('hidden'); }
+        
         function filterBoxes() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             renderBoxes(allBoxes.filter(b => b.box_id.toLowerCase().includes(query)));
         }
 
         function renderBoxes(boxes) {
-            const container = document.getElementById('boxesContainer');
+            const grid = document.getElementById('boxesGrid');
             if (boxes.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 col-span-2 text-gray-400"><p>אין נתונים להצגה.</p></div>`; return;
+                grid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">אין נתונים.</div>`; return;
             }
 
-            container.innerHTML = boxes.map(box => {
+            grid.innerHTML = boxes.map(box => {
                 const isSearching = box.status === 'searching';
                 const isFound = box.status === 'found';
                 const battery = box.battery_level ?? 100;
                 
-                // עיבוד זמן "אות החיים" האחרון לשעון מקומי
                 let lastSeenText = "אין נתון";
                 if(box.last_updated) {
                     const dateObj = new Date(box.last_updated);
-                    const timeStr = dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-                    const dateStr = dateObj.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
-                    lastSeenText = `${timeStr} (${dateStr})`;
+                    lastSeenText = `${dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
                 }
 
-                let batColor = battery < 20 ? 'bg-red-50 text-red-600 animate-pulse' : battery < 60 ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-700';
+                let batColor = battery < 20 ? 'bg-rose-500 animate-pulse' : battery < 60 ? 'bg-amber-500' : 'bg-emerald-500';
+                let batTextColor = battery < 20 ? 'text-rose-400' : battery < 60 ? 'text-amber-400' : 'text-emerald-400';
+                let cardBorder = isSearching ? 'border-indigo-500 bg-indigo-950/30' : 'border-slate-700/80 bg-slate-800/90';
 
                 return `
-                    <div class="bg-white border ${isSearching ? 'border-blue-400 shadow-md ring-1 ring-blue-100' : 'border-gray-100'} rounded-2xl p-5 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
+                    <div class="border rounded-2xl p-5 shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden ${cardBorder}">
+                        <div class="flex justify-between items-start gap-2 mb-3">
                             <div>
-                                <span class="text-xs font-bold px-2 py-1 rounded-full ${isSearching ? 'bg-blue-100 text-blue-700' : isFound ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
-                                    ${isSearching ? 'מחפש...' : isFound ? 'נמצאה' : 'במנוחה'}
-                                </span>
-                                <h3 class="text-xl font-bold text-gray-800 mt-2">ארכלית #${box.box_id}</h3>
+                                <span class="text-xs text-slate-400 font-medium">ארכלית מספר</span>
+                                <h2 class="text-2xl font-black text-white tracking-wider">#${box.box_id}</h2>
                             </div>
-                            <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl border ${batColor}">
-                                <i class="fa-solid fa-battery-half"></i> <span class="font-bold">${battery}%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="text-xs text-gray-500 mb-4 bg-gray-50 inline-block px-2 py-1 rounded">
-                            <i class="fa-solid fa-clock-rotate-left ml-1"></i> אות חיים אחרון: <strong>${lastSeenText}</strong>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${isSearching ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 animate-pulse' : isFound ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700/80 text-slate-300'}">
+                                ${isSearching ? 'מחפש ומצפצף...' : isFound ? 'נמצאה' : 'במנוחה (Idle)'}
+                            </span>
                         </div>
 
-                        <div class="flex gap-2 border-t border-gray-100 pt-3">
-                            ${isSearching 
-                                ? `<button onclick="updateBox('${box.box_id}', 'idle')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-xl text-sm font-medium"><i class="fa-solid fa-stop ml-1"></i> עצור</button>` 
-                                : `<button onclick="updateBox('${box.box_id}', 'searching')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-medium"><i class="fa-solid fa-bell ml-1"></i> איתור</button>`
-                            }
+                        <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 mt-2 mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-slate-300 flex items-center gap-1"><i data-lucide="battery" class="w-4 h-4 ${batTextColor}"></i> רמת סוללה</span>
+                                <span class="text-sm font-bold ${batTextColor}">${battery}%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div class="${batColor} h-full" style="width: ${battery}%"></div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
+                                <span class="text-[10px] text-slate-400">אות חיים אחרון מהשטח:</span>
+                                <span class="text-xs font-mono font-bold text-slate-300">${lastSeenText}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2.5 pt-1">
+                            ${isSearching ? `
+                                <button onclick="updateBox('${box.box_id}', 'idle')" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5"><i data-lucide="square" class="w-4 h-4"></i> הפסק חיפוש</button>
+                            ` : `
+                                <button onclick="updateBox('${box.box_id}', 'searching')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl shadow transition flex items-center justify-center gap-1.5"><i data-lucide="volume-2" class="w-4 h-4"></i> הפעל איתור</button>
+                            `}
                         </div>
                     </div>
                 `;
             }).join('');
+            lucide.createIcons();
         }
 
+        // התיקון הקריטי: מעדכנים רק סטטוס! ה-last_updated יתעדכן רק כשהרכיב הפיזי יפנה לשרת.
         async function updateBox(boxId, newStatus) {
             await fetch(`${SUPABASE_URL}/rest/v1/boxes?box_id=eq.${boxId}`, {
                 method: 'PATCH',
-                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, last_updated: new Date().toISOString() })
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ status: newStatus }) 
             });
+            loadBoxes();
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modalContent').classList.remove('scale-95'), 10);
+        }
+        function closeAddModal() {
+            document.getElementById('modalContent').classList.add('scale-95');
+            setTimeout(() => document.getElementById('addModal').classList.add('hidden'), 200);
+            document.getElementById('newBoxId').value = '';
+        }
+
+        async function addNewBox() {
+            const boxId = document.getElementById('newBoxId').value.trim();
+            if (!boxId) return;
+            await fetch(`${SUPABASE_URL}/rest/v1/boxes`, {
+                method: 'POST',
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+                body: JSON.stringify({ box_id: boxId, status: 'idle', battery_level: 100, last_updated: new Date().toISOString() })
+            });
+            closeAddModal();
             loadBoxes();
         }
     </script>
